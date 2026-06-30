@@ -69,7 +69,7 @@
 - [x] Fix: Missing comma after `reports` key in nav object (en.js + ja.js) — JS syntax error that crashed locale parse
 - [x] Fix: `getBarHeight` hardcoded maxValue=25000 → dynamic `maxCostValue` computed from actual data (Spending.vue)
 
-- [ ] Commit, push, and open a PR
+- [x] Commit, push, and open a PR
 - [ ] (Stretch) D1: UI modernization
 - [ ] (Stretch) D2: Full i18n for remaining modules
 - [ ] (Stretch) D3: Dark mode (prototype on a worktree branch)
