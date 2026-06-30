@@ -91,26 +91,21 @@ export function useI18n() {
   }
 
   // Translate warehouse names
+  const WAREHOUSE_I18N_KEYS = {
+    'San Francisco': 'warehouses.sanFrancisco',
+    'London': 'warehouses.london',
+    'Tokyo': 'warehouses.tokyo'
+  }
+
   const translateWarehouse = (warehouseName) => {
-    if (currentLocale.value === 'ja') {
-      // Handle city names
-      const cityMap = {
-        'San Francisco': 'サンフランシスコ',
-        'London': 'ロンドン',
-        'Tokyo': '東京'
-      }
+    const key = WAREHOUSE_I18N_KEYS[warehouseName]
+    if (key) return t(key)
 
-      if (cityMap[warehouseName]) {
-        return cityMap[warehouseName]
-      }
-
-      // Handle "Warehouse X-##" pattern
-      if (warehouseName.startsWith('Warehouse ')) {
-        return warehouseName.replace('Warehouse ', '倉庫')
-      }
-
-      return warehouseName
+    // Handle "Warehouse X-##" pattern in Japanese
+    if (currentLocale.value === 'ja' && warehouseName.startsWith('Warehouse ')) {
+      return warehouseName.replace('Warehouse ', '倉庫')
     }
+
     return warehouseName
   }
 

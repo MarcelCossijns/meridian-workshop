@@ -6,7 +6,9 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
-    companyName: 'Catalyst Components',
+    restocking: 'Restocking',
+    reports: 'Reports',
+    companyName: 'Meridian Components',
     subtitle: 'Inventory Management System'
   },
 
@@ -311,6 +313,88 @@ export default {
     selectLanguage: 'Select Language'
   },
 
+  // Restocking
+  restocking: {
+    title: 'Restocking Recommendations',
+    description: 'Restock suggestions based on demand trends and inventory levels',
+    budget: {
+      label: 'Budget Limit',
+      placeholder: 'No limit',
+      hint: 'Enter a USD amount to limit recommendations by total cost'
+    },
+    summary: {
+      itemsRecommended: 'Items Recommended',
+      totalEstimatedCost: 'Total Estimated Cost',
+      budgetRemaining: 'Budget Remaining',
+      noBudgetSet: 'No budget set'
+    },
+    table: {
+      sku: 'SKU',
+      itemName: 'Item Name',
+      category: 'Category',
+      warehouse: 'Warehouse',
+      stock: 'Stock (On Hand / Reorder)',
+      demandTrend: 'Demand Trend',
+      recommendedQty: 'Recommended Qty',
+      estimatedCost: 'Est. Cost',
+      urgency: 'Urgency'
+    },
+    urgency: {
+      critical: 'Critical',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low'
+    },
+    empty: {
+      title: 'No Restock Needed',
+      description: 'All inventory levels are adequate for current demand.'
+    },
+    error: {
+      loadFailed: 'Failed to load restocking recommendations'
+    }
+  },
+
+  // Backlog
+  backlog: {
+    title: 'Backlog Management',
+    description: 'Track and resolve inventory shortages',
+    totalItems: 'Total Backlog Items',
+    items: 'Backlog Items',
+    loadFailed: 'Failed to load backlog'
+  },
+
+  // Reports
+  reports: {
+    title: 'Performance Reports',
+    description: 'View quarterly performance metrics and monthly trends',
+    quarterly: {
+      title: 'Quarterly Performance',
+      quarter: 'Quarter',
+      totalOrders: 'Total Orders',
+      totalRevenue: 'Total Revenue',
+      avgOrderValue: 'Avg Order Value',
+      fulfillmentRate: 'Fulfillment Rate'
+    },
+    monthly: {
+      chartTitle: 'Monthly Revenue Trend',
+      momTitle: 'Month-over-Month Analysis',
+      month: 'Month',
+      orders: 'Orders',
+      revenue: 'Revenue',
+      change: 'Change',
+      growthRate: 'Growth Rate'
+    },
+    summary: {
+      totalRevenue: 'Total Revenue (YTD)',
+      avgMonthlyRevenue: 'Avg Monthly Revenue',
+      totalOrders: 'Total Orders (YTD)',
+      bestQuarter: 'Best Performing Quarter'
+    },
+    error: {
+      loadFailed: 'Failed to load reports'
+    }
+  },
+
   // Common
   common: {
     loading: 'Loading...',
@@ -323,6 +407,7 @@ export default {
     search: 'Search',
     filter: 'Filter',
     export: 'Export',
-    items: 'items'
+    items: 'items',
+    notAvailable: 'N/A'
   }
 }

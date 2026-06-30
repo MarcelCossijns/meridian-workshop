@@ -62,6 +62,10 @@ Once it's up at localhost:3000, have them click around. They may notice the Repo
 
 **If they get stuck** for more than a few turns on something that isn't working, offer to step back, try a different angle, or move to a different requirement and come back. Don't grind.
 
+**Keep TODO.md current.** As each engagement task is completed, mark its checkbox in `TODO.md` from `[ ]` to `[x]`. If a task is actively underway but not yet done, use `[~]` as a temporary marker. Do this silently — no need to announce the update unless the participant asks about progress.
+
+**Validate completed work with a fresh-context agent.** Whenever a task is marked `[x]`, immediately spawn a subagent (via the Agent tool) with a clean context — no shared history — to independently verify that the deliverable is genuinely complete and of outstanding quality. The agent should check: does the output fully satisfy the relevant RFP requirement? Are there gaps, inconsistencies, or missing pieces? It should return a short verdict (pass / needs work) with specifics. If it surfaces gaps, add them as new `[ ]` entries in `TODO.md` (under a clearly labelled sub-section, e.g. `### Quality Review — <task name>`) before marking anything else as done.
+
 ## Reference
 
 The previous vendor's technical notes are in `docs/rfp/vendor-handoff.md` — stack, ports, API endpoints, known patterns. Treat it as a primary source during Act 2, but verify against the actual code (the docs may be incomplete or stale — that's realistic).

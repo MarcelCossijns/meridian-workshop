@@ -1,3 +1,4 @@
+import math
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
@@ -120,7 +121,145 @@ class CreatePurchaseOrderRequest(BaseModel):
     expected_delivery_date: str
     notes: Optional[str] = None
 
+class QuarterlyReport(BaseModel):
+    quarter: str
+    total_orders: int
+    total_revenue: float
+    avg_order_value: float
+    fulfillment_rate: float
+
+class MonthlyTrend(BaseModel):
+    month: str
+    order_count: int
+    revenue: float
+    delivered_count: int
+
+class Task(BaseModel):
+    id: str
+    title: str
+    priority: str = 'medium'
+    due_date: Optional[str] = None
+    status: str = 'pending'
+
+class CreateTaskRequest(BaseModel):
+    title: str
+    priority: str = 'medium'
+    due_date: Optional[str] = None
+
+class RestockingRecommendation(BaseModel):
+    sku: str
+    name: str
+    category: str
+    warehouse: str
+    quantity_on_hand: int
+    reorder_point: int
+    recommended_quantity: int
+    unit_cost: float
+    estimated_cost: float
+    urgency: str
+    urgency_score: float
+    rationale: str
+    demand_trend: Optional[str] = None
+    backlog_days_delayed: Optional[int] = None
+
+class RestockingResponse(BaseModel):
+    budget: float
+    total_estimated_cost: float
+    items_recommended: int
+    recommendations: List[RestockingRecommendation]
+    filters: dict
+
+# In-memory task storage
+_tasks: list = []
+_task_counter = [0]
+
 # API endpoints
+
+def _compute_urgency_score(inv_item, demand, backlog):
+    reorder_pt = inv_item.get("reorder_point", 0)
+    if reorder_pt == 0:
+        stock_score = 0.0
+    elif demand:
+        coverage = inv_item["quantity_on_hand"] / max(demand["forecasted_demand"], 1)
+        stock_score = max(0.0, min(1.0, 1.0 - coverage))
+    else:
+        coverage = inv_item["quantity_on_hand"] / max(reorder_pt, 1)
+        stock_score = max(0.0, min(1.0, 1.0 - coverage))
+
+    if demand:
+        trend = demand["trend"]
+        if trend == "increasing":
+            pct = (demand["forecasted_demand"] - demand["current_demand"]) / max(demand["current_demand"], 1)
+            trend_score = 0.7 + 0.3 * min(pct, 1.0)
+        elif trend == "stable":
+            trend_score = 0.3
+        else:
+            trend_score = 0.0
+    else:
+        trend_score = 0.0
+
+    backlog_score = 1.0 if backlog else 0.0
+    base = 0.50 * stock_score + 0.35 * trend_score + 0.15 * backlog_score
+
+    below = inv_item["quantity_on_hand"] < reorder_pt
+    if below and demand and demand.get("trend") == "increasing":
+        base = min(1.0, base * 1.35)
+
+    return round(base, 4)
+
+
+def _score_to_label(score):
+    if score >= 0.7:
+        return "critical"
+    elif score >= 0.4:
+        return "high"
+    elif score >= 0.2:
+        return "medium"
+    return "low"
+
+
+def _compute_recommended_quantity(inv_item, demand, backlog):
+    if demand:
+        target = math.ceil(demand["forecasted_demand"] * 1.20)
+    else:
+        target = math.ceil(inv_item["reorder_point"] * 1.20)
+    qty = max(0, target - inv_item["quantity_on_hand"])
+    if qty == 0 and backlog:
+        qty = max(1, backlog["quantity_needed"] - backlog["quantity_available"])
+    return qty
+
+
+def _build_rationale(inv_item, demand, backlog):
+    parts = []
+    if inv_item["quantity_on_hand"] < inv_item["reorder_point"]:
+        deficit = inv_item["reorder_point"] - inv_item["quantity_on_hand"]
+        parts.append(f"Below reorder point by {deficit} units")
+    else:
+        parts.append("At or above reorder point")
+
+    if demand:
+        trend = demand["trend"]
+        if trend == "increasing":
+            pct = round(
+                (demand["forecasted_demand"] - demand["current_demand"])
+                / max(demand["current_demand"], 1) * 100
+            )
+            parts.append(f"demand increasing {pct}%")
+        elif trend == "decreasing":
+            parts.append("demand decreasing")
+        else:
+            parts.append("demand stable")
+    else:
+        parts.append("no demand forecast available")
+
+    if backlog:
+        parts.append(
+            f"active backlog {backlog['days_delayed']} day(s) delayed ({backlog['priority']} priority)"
+        )
+
+    return "; ".join(parts)
+
+# Restocking helper functions
 @app.get("/")
 def root():
     return {"message": "Factory Inventory Management System API", "version": "1.0.0"}
@@ -227,13 +366,20 @@ def get_recent_transactions():
     """Get recent transactions"""
     return recent_transactions
 
-@app.get("/api/reports/quarterly")
-def get_quarterly_reports():
+@app.get("/api/reports/quarterly", response_model=List[QuarterlyReport])
+def get_quarterly_reports(
+    warehouse: Optional[str] = None,
+    category: Optional[str] = None,
+    month: Optional[str] = None
+):
     """Get quarterly performance reports"""
     # Calculate quarterly statistics from orders
+    filtered_orders = apply_filters(orders, warehouse, category)
+    filtered_orders = filter_by_month(filtered_orders, month)
+
     quarters = {}
 
-    for order in orders:
+    for order in filtered_orders:
         order_date = order.get('order_date', '')
         # Determine quarter
         if '2025-01' in order_date or '2025-02' in order_date or '2025-03' in order_date:
@@ -264,45 +410,173 @@ def get_quarterly_reports():
     # Calculate averages and fulfillment rate
     result = []
     for q, data in quarters.items():
+        avg_order_value = 0.0
+        fulfillment_rate = 0.0
         if data['total_orders'] > 0:
-            data['avg_order_value'] = round(data['total_revenue'] / data['total_orders'], 2)
-            data['fulfillment_rate'] = round((data['delivered_orders'] / data['total_orders']) * 100, 1)
-        result.append(data)
+            avg_order_value = round(data['total_revenue'] / data['total_orders'], 2)
+            fulfillment_rate = round((data['delivered_orders'] / data['total_orders']) * 100, 1)
+        result.append({
+            'quarter': data['quarter'],
+            'total_orders': data['total_orders'],
+            'total_revenue': data['total_revenue'],
+            'avg_order_value': avg_order_value,
+            'fulfillment_rate': fulfillment_rate,
+        })
 
     # Sort by quarter
     result.sort(key=lambda x: x['quarter'])
     return result
 
-@app.get("/api/reports/monthly-trends")
-def get_monthly_trends():
+@app.get("/api/reports/monthly-trends", response_model=List[MonthlyTrend])
+def get_monthly_trends(
+    warehouse: Optional[str] = None,
+    category: Optional[str] = None,
+    month: Optional[str] = None
+):
     """Get month-over-month trends"""
     months = {}
 
-    for order in orders:
+    filtered_orders = apply_filters(orders, warehouse, category)
+    filtered_orders = filter_by_month(filtered_orders, month)
+
+    for order in filtered_orders:
         order_date = order.get('order_date', '')
         if not order_date:
             continue
 
         # Extract month (format: YYYY-MM-DD)
-        month = order_date[:7]  # Gets YYYY-MM
+        order_month = order_date[:7]  # Gets YYYY-MM
 
-        if month not in months:
-            months[month] = {
-                'month': month,
+        if order_month not in months:
+            months[order_month] = {
+                'month': order_month,
                 'order_count': 0,
                 'revenue': 0,
                 'delivered_count': 0
             }
 
-        months[month]['order_count'] += 1
-        months[month]['revenue'] += order.get('total_value', 0)
+        months[order_month]['order_count'] += 1
+        months[order_month]['revenue'] += order.get('total_value', 0)
         if order.get('status') == 'Delivered':
-            months[month]['delivered_count'] += 1
+            months[order_month]['delivered_count'] += 1
 
     # Convert to list and sort
     result = list(months.values())
     result.sort(key=lambda x: x['month'])
     return result
+
+@app.get("/api/restocking/recommendations", response_model=RestockingResponse)
+def get_restocking_recommendations(
+    budget: float = 0,
+    warehouse: str = "all",
+    category: str = "all",
+):
+    """Get restocking recommendations ranked by urgency with optional budget ceiling."""
+    filtered_inv = apply_filters(inventory_items, warehouse, category)
+
+    demand_by_sku = {d["item_sku"]: d for d in demand_forecasts}
+    backlog_by_sku: dict = {}
+    for b in backlog_items:
+        sku = b["item_sku"]
+        if sku not in backlog_by_sku or b["days_delayed"] > backlog_by_sku[sku]["days_delayed"]:
+            backlog_by_sku[sku] = b
+
+    candidates = []
+    for item in filtered_inv:
+        sku = item["sku"]
+        demand = demand_by_sku.get(sku)
+        backlog = backlog_by_sku.get(sku)
+
+        below_reorder = item["quantity_on_hand"] < item["reorder_point"]
+        has_backlog = backlog is not None
+
+        if not below_reorder and not has_backlog:
+            continue
+
+        score = _compute_urgency_score(item, demand, backlog)
+        label = _score_to_label(score)
+        rec_qty = _compute_recommended_quantity(item, demand, backlog)
+        est_cost = round(rec_qty * item["unit_cost"], 2)
+
+        candidates.append({
+            "sku": sku,
+            "name": item["name"],
+            "category": item["category"],
+            "warehouse": item["warehouse"],
+            "quantity_on_hand": item["quantity_on_hand"],
+            "reorder_point": item["reorder_point"],
+            "recommended_quantity": rec_qty,
+            "unit_cost": item["unit_cost"],
+            "estimated_cost": est_cost,
+            "urgency": label,
+            "urgency_score": score,
+            "rationale": _build_rationale(item, demand, backlog),
+            "demand_trend": demand["trend"] if demand else None,
+            "backlog_days_delayed": backlog["days_delayed"] if backlog else None,
+        })
+
+    candidates.sort(key=lambda x: x["urgency_score"], reverse=True)
+
+    if budget > 0:
+        selected = []
+        remaining = budget
+        for item in candidates:
+            if item["estimated_cost"] <= remaining:
+                selected.append(item)
+                remaining -= item["estimated_cost"]
+        candidates = selected
+
+    total_cost = round(sum(r["estimated_cost"] for r in candidates), 2)
+    all_warehouses = sorted({item["warehouse"] for item in inventory_items})
+    all_categories = sorted({item["category"] for item in inventory_items})
+
+    return {
+        "budget": budget,
+        "total_estimated_cost": total_cost,
+        "items_recommended": len(candidates),
+        "recommendations": candidates,
+        "filters": {
+            "warehouses": all_warehouses,
+            "categories": all_categories,
+        },
+    }
+
+@app.get("/api/tasks", response_model=List[Task])
+def get_tasks():
+    """Get all tasks"""
+    return _tasks
+
+@app.post("/api/tasks", response_model=Task)
+def create_task(task: CreateTaskRequest):
+    """Create a new task"""
+    _task_counter[0] += 1
+    new_task = {
+        "id": f"api-{_task_counter[0]}",
+        "title": task.title,
+        "priority": task.priority,
+        "due_date": task.due_date,
+        "status": "pending"
+    }
+    _tasks.append(new_task)
+    return new_task
+
+@app.delete("/api/tasks/{task_id}")
+def delete_task(task_id: str):
+    """Delete a task"""
+    task = next((t for t in _tasks if t["id"] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    _tasks.remove(task)
+    return {"message": "Task deleted"}
+
+@app.patch("/api/tasks/{task_id}", response_model=Task)
+def toggle_task(task_id: str):
+    """Toggle task completion status"""
+    task = next((t for t in _tasks if t["id"] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task["status"] = "completed" if task["status"] == "pending" else "pending"
+    return task
 
 if __name__ == "__main__":
     import uvicorn

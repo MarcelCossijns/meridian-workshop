@@ -6,7 +6,9 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
-    companyName: '触媒コンポーネンツ',
+    restocking: '補充推奨',
+    reports: 'レポート',
+    companyName: 'メリディアンコンポーネンツ',
     subtitle: '在庫管理システム'
   },
 
@@ -311,6 +313,88 @@ export default {
     selectLanguage: '言語を選択'
   },
 
+  // Restocking
+  restocking: {
+    title: '補充推奨',
+    description: '需要トレンドと在庫レベルに基づく補充提案',
+    budget: {
+      label: '予算上限',
+      placeholder: '上限なし',
+      hint: '合計コストで推奨をフィルタリングするUSD金額を入力してください'
+    },
+    summary: {
+      itemsRecommended: '推奨品目数',
+      totalEstimatedCost: '合計推定コスト',
+      budgetRemaining: '残予算',
+      noBudgetSet: '予算未設定'
+    },
+    table: {
+      sku: 'SKU',
+      itemName: '品目名',
+      category: 'カテゴリ',
+      warehouse: '倉庫',
+      stock: '在庫（手持 / 再注文点）',
+      demandTrend: '需要トレンド',
+      recommendedQty: '推奨数量',
+      estimatedCost: '推定コスト',
+      urgency: '緊急度'
+    },
+    urgency: {
+      critical: '緊急',
+      high: '高',
+      medium: '中',
+      low: '低'
+    },
+    empty: {
+      title: '補充不要',
+      description: 'すべての在庫レベルが現在の需要に対して十分です。'
+    },
+    error: {
+      loadFailed: '補充推奨の読み込みに失敗しました'
+    }
+  },
+
+  // Backlog
+  backlog: {
+    title: 'バックログ管理',
+    description: '在庫不足の追跡と解決',
+    totalItems: 'バックログ総数',
+    items: 'バックログ品目',
+    loadFailed: 'バックログの読み込みに失敗しました'
+  },
+
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期パフォーマンス指標と月次トレンドを表示',
+    quarterly: {
+      title: '四半期パフォーマンス',
+      quarter: '四半期',
+      totalOrders: '総注文数',
+      totalRevenue: '総収益',
+      avgOrderValue: '平均注文額',
+      fulfillmentRate: '履行率'
+    },
+    monthly: {
+      chartTitle: '月次収益トレンド',
+      momTitle: '前月比分析',
+      month: '月',
+      orders: '注文',
+      revenue: '収益',
+      change: '変化',
+      growthRate: '成長率'
+    },
+    summary: {
+      totalRevenue: '総収益（年初来）',
+      avgMonthlyRevenue: '平均月次収益',
+      totalOrders: '総注文数（年初来）',
+      bestQuarter: '最高パフォーマンス四半期'
+    },
+    error: {
+      loadFailed: 'レポートの読み込みに失敗しました'
+    }
+  },
+
   // Common
   common: {
     loading: '読み込み中...',
@@ -323,7 +407,8 @@ export default {
     search: '検索',
     filter: 'フィルター',
     export: 'エクスポート',
-    items: '件'
+    items: '件',
+    notAvailable: 'N/A'
   },
 
   // Product Names

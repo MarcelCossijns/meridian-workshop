@@ -80,11 +80,11 @@
         <div class="chart-container">
           <div class="bar-chart">
             <div class="y-axis">
-              <span>{{ currencySymbol }}25K</span>
-              <span>{{ currencySymbol }}20K</span>
-              <span>{{ currencySymbol }}15K</span>
-              <span>{{ currencySymbol }}10K</span>
-              <span>{{ currencySymbol }}5K</span>
+              <span>{{ currencySymbol }}{{ maxCostValue }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxCostValue * 0.8) }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxCostValue * 0.6) }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxCostValue * 0.4) }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxCostValue * 0.2) }}K</span>
               <span>{{ currencySymbol }}0</span>
             </div>
             <div class="chart-area">
@@ -210,6 +210,18 @@ export default {
     const filteredMonthlySpending = computed(() => {
       if (selectedPeriod.value === 'all') {
         return allMonthlySpending.value
+      }
+
+      if (selectedPeriod.value.startsWith('Q')) {
+        const quarterMonths = {
+          'Q1': ['Jan', 'Feb', 'Mar'],
+          'Q2': ['Apr', 'May', 'Jun'],
+          'Q3': ['Jul', 'Aug', 'Sep'],
+          'Q4': ['Oct', 'Nov', 'Dec']
+        }
+        const quarter = selectedPeriod.value.split('-')[0]
+        const months = quarterMonths[quarter] || []
+        return allMonthlySpending.value.filter(m => months.includes(m.month))
       }
 
       // Extract month name from YYYY-MM format
@@ -383,9 +395,17 @@ export default {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
     })
 
+    const maxCostValue = computed(() => {
+      if (!allMonthlySpending.value.length) return 25
+      const max = Math.max(...allMonthlySpending.value.map(m =>
+        (m.procurement || 0) + (m.operational || 0) + (m.labor || 0) + (m.overhead || 0)
+      ))
+      return Math.ceil(max / 1000)
+    })
+
     const getBarHeight = (value) => {
-      const maxValue = 25000
-      return (value / maxValue) * 100
+      const maxValue = maxCostValue.value * 1000
+      return maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0
     }
 
     const getRevenueBarHeight = (value) => {
@@ -448,8 +468,7 @@ export default {
     }
 
     const handleTransactionClick = (transaction) => {
-      console.log('Transaction clicked:', transaction)
-      alert(`Transaction Details:\n\nID: ${transaction.id}\nDescription: ${transaction.description}\nVendor: ${transaction.vendor}\nDate: ${formatDateShort(transaction.date)}\nAmount: $${transaction.amount.toLocaleString()}`)
+      showCostDetail(transaction)
     }
 
     const showCostDetail = (monthData) => {
@@ -473,6 +492,7 @@ export default {
       profitMargin,
       monthlyRevenue,
       maxRevenueValue,
+      maxCostValue,
       formatCurrency,
       currencySymbol,
       getBarHeight,

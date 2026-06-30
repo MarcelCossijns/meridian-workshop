@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>adesso — Meridian Components RFP Response MC-2026-0417</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0f1e;
+    color: #e2e8f0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .deck-wrapper {
+    width: 960px;
+    max-width: 98vw;
+  }
+
+  .slide-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .slide {
+    display: none;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+  }
+
+  .slide.active { display: flex; flex-direction: column; }
+
+  /* Accent bar at top */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%);
+  }
+
+  .slide-inner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 48px 64px 40px;
+  }
+
+  /* adesso logo — footer watermark (non-title slides) */
+  .slide-logo {
+    position: absolute;
+    bottom: 20px;
+    right: 40px;
+    line-height: 1;
+  }
+
+  /* adesso logo — top-left corner (title slide) */
+  .title-logo {
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    line-height: 1;
+  }
+
+  /* Slide number */
+  .slide-num {
+    position: absolute;
+    bottom: 28px;
+    left: 40px;
+    font-size: 11px;
+    color: #334155;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #f8fafc;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 30px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: #94a3b8;
+    line-height: 1.5;
+    max-width: 580px;
+  }
+
+  p { font-size: 15px; color: #cbd5e1; line-height: 1.6; }
+
+  /* ── Layouts ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .four-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: #1e293b;
+    border: 1px solid #2d3f55;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 8px;
+  }
+
+  .card p { font-size: 13px; color: #94a3b8; }
+
+  .card ul {
+    list-style: none;
+    margin-top: 8px;
+  }
+
+  .card ul li {
+    font-size: 13px;
+    color: #94a3b8;
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .card ul li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: #3b82f6;
+    font-weight: 700;
+  }
+
+  /* ── List styles ── */
+  .bullet-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .bullet-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+
+  .bullet-list li .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  .bullet-list.red li .dot { background: #ef4444; }
+  .bullet-list.green li .dot { background: #22c55e; }
+
+  /* ── Highlight numbers ── */
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 16px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #3b82f6;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Tags / badges ── */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-red  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .tag-green{ background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+  .tag-amber{ background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+
+  /* ── Timeline (slide 9) ── */
+  .timeline {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .phase {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+
+  .phase-label {
+    width: 130px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 20px;
+  }
+
+  .phase-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .phase-weeks {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .phase-bar {
+    flex: 1;
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .phase-bar-1 { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.3); }
+  .phase-bar-2 { background: rgba(99,102,241,0.18); border: 1px solid rgba(99,102,241,0.3); }
+  .phase-bar-3 { background: rgba(34,197,94,0.14);  border: 1px solid rgba(34,197,94,0.25); }
+
+  .phase-item {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e2e8f0;
+    background: rgba(255,255,255,0.06);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* ── Pricing table (slide 10) ── */
+  .pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pricing-table th {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    text-align: left;
+    padding: 5px 14px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .pricing-table td {
+    font-size: 13px;
+    color: #cbd5e1;
+    padding: 5px 14px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: middle;
+  }
+
+  .pricing-table tr:last-child td { border-bottom: none; }
+
+  .pricing-table .price {
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .pricing-table .days {
+    text-align: right;
+    color: #94a3b8;
+  }
+
+  .pricing-table tr.subtotal td {
+    background: rgba(59,130,246,0.08);
+    font-weight: 700;
+    color: #f1f5f9;
+    border-top: 1px solid rgba(59,130,246,0.3);
+    border-bottom: 2px solid rgba(59,130,246,0.2);
+  }
+
+  .pricing-table tr.subtotal .price { color: #60a5fa; font-size: 14px; }
+  .pricing-table tr.subtotal .days  { color: #93c5fd; }
+
+  .pricing-table tr.grand-total td {
+    background: rgba(59,130,246,0.14);
+    font-weight: 800;
+    color: #f1f5f9;
+    border-top: 1px solid rgba(59,130,246,0.4);
+    border-bottom: none;
+  }
+
+  .pricing-table tr.grand-total .price { color: #60a5fa; font-size: 15px; }
+  .pricing-table tr.grand-total .days  { color: #93c5fd; }
+
+  .pricing-table tr.optional-header td {
+    background: rgba(99,102,241,0.07);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #818cf8;
+    padding: 5px 14px;
+    border-bottom: 1px solid rgba(99,102,241,0.2);
+  }
+
+  /* ── Title slide ── */
+  .title-slide-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding: 56px 72px 56px 72px;
+  }
+
+  .title-rfp-ref {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 24px;
+  }
+
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 2px;
+    margin: 20px 0;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 8px;
+  }
+
+  .meta-item {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .meta-item span {
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  /* ── Nav controls ── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding: 0 4px;
+  }
+
+  .nav-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background: #2d3f55;
+    color: #e2e8f0;
+    border-color: #3b82f6;
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .nav-dots {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #334155;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .nav-dot.active {
+    background: #3b82f6;
+    transform: scale(1.3);
+  }
+
+  /* ── Stakeholder card variant ── */
+  .stakeholder-card {
+    background: #1e293b;
+    border: 1px solid #2d3f55;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stakeholder-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .stakeholder-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .stakeholder-need {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+
+  /* ── Why adesso ── */
+  .proof-point {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .proof-point:last-child { border-bottom: none; }
+
+  .proof-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .proof-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 2px;
+  }
+
+  .proof-text p { font-size: 13px; color: #64748b; }
+
+  /* ── Next steps ── */
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .step-row:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-text strong { display: block; font-size: 14px; font-weight: 700; color: #f1f5f9; }
+  .step-text p { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+  /* ── Team slide ── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+  }
+
+  .team-card {
+    background: #1e293b;
+    border: 1px solid #2d3f55;
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .team-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.2;
+  }
+
+  .team-role {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 100px;
+    background: rgba(59,130,246,0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59,130,246,0.3);
+    margin-bottom: 2px;
+    align-self: flex-start;
+  }
+
+  .team-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 2px 0;
+  }
+
+  .team-skill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+    border: 1px solid #334155;
+  }
+
+  .team-bio {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  .team-footer {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 6px;
+  }
+
+  .team-footer p {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="deck-wrapper">
+  <div class="slide-counter">
+    <span id="counter">1 / 15</span>
+  </div>
+
+  <!-- ── SLIDE 1: Title ── -->
+  <div class="slide active" id="slide-1">
+    <!-- adesso logo top-left -->
+    <div class="title-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 120 32" role="img" aria-label="adesso">
+        <text x="0" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" fill="#e3000f" letter-spacing="-0.5">adesso</text>
+      </svg>
+    </div>
+    <div class="title-slide-inner" style="padding-top:72px">
+      <div class="title-rfp-ref">RFP Response · MC-2026-0417</div>
+      <h1>Modernizing Meridian's<br>Inventory Dashboard</h1>
+      <div class="divider"></div>
+      <p class="subtitle">adesso is ready to remediate, extend, and future-proof the platform Meridian's previous vendor left behind — on a fixed-fee engagement with no surprises.</p>
+      <div class="meta-row">
+        <div class="meta-item">Prepared by <span>adesso</span></div>
+        <div class="meta-item">Submitted <span>May 8, 2026</span></div>
+        <div class="meta-item">Contact <span>marcel.cossijns@adesso.de</span></div>
+      </div>
+    </div>
+    <!-- footer logo small -->
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">1</div>
+  </div>
+
+  <!-- ── SLIDE 2: The Problem ── -->
+  <div class="slide" id="slide-2">
+    <div class="slide-inner">
+      <div class="eyebrow">Current State</div>
+      <h2>What Meridian has today</h2>
+      <div class="two-col">
+        <div>
+          <ul class="bullet-list red" style="gap:8px">
+            <li><span class="dot"></span>Reports module filters are unwired — data does not filter on user input</li>
+            <li><span class="dot"></span>No automated test coverage delivered — IT team is blocking all changes</li>
+            <li><span class="dot"></span>i18n gaps leave Tokyo warehouse staff without translated UI</li>
+            <li><span class="dot"></span>Inconsistent API patterns across views; console errors in production</li>
+            <li><span class="dot"></span>No architecture documentation — new engineers cannot onboard</li>
+            <li><span class="dot"></span>Previous vendor departed November 2024 with minimal handoff</li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;justify-content:center;">
+          <div class="card">
+            <div class="card-title">Missing entirely</div>
+            <ul>
+              <li>Restocking recommendations view</li>
+              <li>Budget-ceiling purchase order logic</li>
+              <li>End-to-end browser tests</li>
+              <li>Current-state architecture docs</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color:rgba(239,68,68,0.3)">
+            <div class="card-title" style="color:#f87171">Risk if left unaddressed</div>
+            <p>IT gatekeeper blocks deployments. Operations team makes restock decisions without tooling. Tokyo warehouse operates on a partially translated interface.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">2</div>
+  </div>
+
+  <!-- ── SLIDE 3: Our Understanding ── -->
+  <div class="slide" id="slide-3">
+    <div class="slide-inner">
+      <div class="eyebrow">Stakeholder Alignment</div>
+      <h2>Who we're working for — and what they need</h2>
+      <div class="three-col" style="margin-bottom:0">
+        <div class="stakeholder-card">
+          <div class="stakeholder-role">VP Operations</div>
+          <div class="stakeholder-name">R. Tanaka</div>
+          <div class="tag tag-amber" style="margin-bottom:8px;align-self:flex-start">Daily Dashboard User</div>
+          <div class="stakeholder-need">Frustrated with the previous vendor. Her priority is the Restocking view (R2) — she needs data-driven purchase recommendations with a budget ceiling her team can adjust.</div>
+        </div>
+        <div class="stakeholder-card">
+          <div class="stakeholder-role">IT (gatekeeper)</div>
+          <div class="stakeholder-name">Unnamed contact</div>
+          <div class="tag tag-red" style="margin-bottom:8px;align-self:flex-start">Blocking Deployments</div>
+          <div class="stakeholder-need">Has blocked all changes to the dashboard because no test coverage was delivered. R3 (automated browser tests) is non-negotiable — it must land before IT will approve anything.</div>
+        </div>
+        <div class="stakeholder-card">
+          <div class="stakeholder-role">Director of Procurement</div>
+          <div class="stakeholder-name">J. Okafor</div>
+          <div class="tag tag-blue" style="margin-bottom:8px;align-self:flex-start">Vendor Selection Owner</div>
+          <div class="stakeholder-need">Owns the decision. Values timeline and price predictability above all. We respond with a fixed-fee structure and a 10-week delivery plan with clear phase gates.</div>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <p style="font-size:13px;color:#64748b">3 warehouses · San Francisco (HQ) · London (EMEA) · Tokyo (APAC, opened 2023) · ~180 employees · ~$9.6M revenue</p>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">3</div>
+  </div>
+
+  <!-- ── SLIDE 4: Our Approach ── -->
+  <div class="slide" id="slide-4">
+    <div class="slide-inner">
+      <div class="eyebrow">Approach Overview</div>
+      <h2>Four required deliverables, one structured engagement</h2>
+      <div class="four-col">
+        <div class="card" style="border-top:3px solid #3b82f6">
+          <div class="card-title">R1</div>
+          <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Reports Remediation</div>
+          <p>Audit every issue, fix at least 8 — filters, i18n gaps, API inconsistencies, console noise.</p>
+          <div style="margin-top:12px"><span class="tag tag-blue">Phase 1–2</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid #6366f1">
+          <div class="card-title">R2</div>
+          <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Restocking View</div>
+          <p>New Vue view. Stock levels + demand forecast + operator budget ceiling → purchase order recommendations.</p>
+          <div style="margin-top:12px"><span class="tag tag-amber">Phase 2–3</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid #22c55e">
+          <div class="card-title">R3</div>
+          <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Automated Tests</div>
+          <p>Playwright end-to-end coverage for critical flows. CI-ready. Unblocks IT approval gate.</p>
+          <div style="margin-top:12px"><span class="tag tag-green">Phase 2–3</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid #f59e0b">
+          <div class="card-title">R4</div>
+          <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Architecture Docs</div>
+          <p>Current-state overview delivered in Week 2. Enables IT onboarding and safe future changes.</p>
+          <div style="margin-top:12px"><span class="tag tag-amber">Phase 1</span></div>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <p style="font-size:13px;color:#64748b">Plus desired deliverables D1–D3 (UI modernization, full i18n, dark mode) scoped in optional Phase 3 extension.</p>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">4</div>
+  </div>
+
+  <!-- ── SLIDE 5: R1 ── -->
+  <div class="slide" id="slide-5">
+    <div class="slide-inner">
+      <div class="eyebrow">Required Deliverable · R1</div>
+      <h2>Reports Remediation — audit first, fix second</h2>
+      <div class="two-col">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Known issue categories</div>
+          <ul class="bullet-list" style="gap:10px">
+            <li><span class="dot"></span><strong style="color:#f1f5f9">Filter behavior</strong> — dropdowns and date pickers do not wire to the underlying data</li>
+            <li><span class="dot"></span><strong style="color:#f1f5f9">i18n gaps</strong> — untranslated strings across the Reports view</li>
+            <li><span class="dot"></span><strong style="color:#f1f5f9">API pattern inconsistencies</strong> — mix of direct fetch and abstracted service calls</li>
+            <li><span class="dot"></span><strong style="color:#f1f5f9">Console noise</strong> — unhandled promise rejections and Vue warnings in production builds</li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-title">Our method</div>
+            <ul>
+              <li>Structured audit pass — document each defect before touching code</li>
+              <li>Deliver audit log to Meridian for sign-off</li>
+              <li>Fix in order of stakeholder impact</li>
+              <li>Each fix accompanied by a regression test</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color:rgba(34,197,94,0.3)">
+            <div class="card-title" style="color:#4ade80">Commitment</div>
+            <p>RFP requires "at least 8 issues." We will document everything we find and fix in priority order — no cherry-picking easy wins.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">5</div>
+  </div>
+
+  <!-- ── SLIDE 6: R2 ── -->
+  <div class="slide" id="slide-6">
+    <div class="slide-inner">
+      <div class="eyebrow">Required Deliverable · R2</div>
+      <h2>Restocking Recommendations — the feature Tanaka needs</h2>
+      <div class="two-col">
+        <div>
+          <ul class="bullet-list" style="gap:10px;margin-bottom:16px">
+            <li><span class="dot"></span>New Vue 3 Composition API view — consistent with existing codebase patterns</li>
+            <li><span class="dot"></span>Input: current stock levels per SKU + demand forecast signals</li>
+            <li><span class="dot"></span>Operator-adjustable budget ceiling — the team sets the constraint, the system recommends within it</li>
+            <li><span class="dot"></span>Output: ranked purchase order recommendations with quantity and estimated cost</li>
+            <li><span class="dot"></span>FastAPI endpoint backing the calculation — same JSON-file data layer, no DB migration required</li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-title">Design constraint</div>
+            <p>We work within the existing Vue + FastAPI stack. No new runtime dependencies introduced without client approval. The view will be navigable from the existing sidebar.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Assumptions (to confirm with Tanaka)</div>
+            <ul>
+              <li>Budget ceiling is per warehouse, not global</li>
+              <li>Demand forecast is based on historical order data in the JSON files</li>
+              <li>Recommendations are advisory, not auto-submitted</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">6</div>
+  </div>
+
+  <!-- ── SLIDE 7: R3 ── -->
+  <div class="slide" id="slide-7">
+    <div class="slide-inner">
+      <div class="eyebrow">Required Deliverable · R3</div>
+      <h2>Automated Browser Testing — unblocking IT</h2>
+      <div class="two-col">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Critical flows to be covered</div>
+          <ul class="bullet-list green" style="gap:8px;margin-bottom:16px">
+            <li><span class="dot"></span>Inventory browse — warehouse filter applied</li>
+            <li><span class="dot"></span>Orders management — view and status filter</li>
+            <li><span class="dot"></span>Reports module — filter interactions, export, i18n rendering</li>
+            <li><span class="dot"></span>Restocking view — budget input, recommendation output, interaction</li>
+          </ul>
+          <p style="font-size:13px;color:#64748b">Tests are written against localhost:3000 with the full stack running — real network calls, real data files.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" style="border-color:rgba(34,197,94,0.3)">
+            <div class="card-title" style="color:#4ade80">Technology</div>
+            <p>Playwright — the industry standard for browser automation. Test files committed to the repo. CI-ready from day one.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">What IT gets</div>
+            <ul>
+              <li>A passing test suite they can run before approving any PR</li>
+              <li>Tests as living documentation of expected behavior</li>
+              <li>A clear path to adding coverage for future features</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">7</div>
+  </div>
+
+  <!-- ── SLIDE 8: R4 ── -->
+  <div class="slide" id="slide-8">
+    <div class="slide-inner">
+      <div class="eyebrow">Required Deliverable · R4</div>
+      <h2>Architecture Documentation — delivered in Week 2</h2>
+      <div class="two-col">
+        <div>
+          <ul class="bullet-list" style="gap:10px">
+            <li><span class="dot"></span>Current-state overview of the Vue 3 + FastAPI stack — components, routes, data flow</li>
+            <li><span class="dot"></span>Data layer diagram — how JSON files in <code style="font-size:12px;background:#1e293b;padding:1px 6px;border-radius:3px;color:#94a3b8">server/data/</code> map to API endpoints and frontend views</li>
+            <li><span class="dot"></span>Deployment topology — frontend dev server (3000), API server (8001), and how they connect</li>
+            <li><span class="dot"></span>Known gaps and technical debt noted explicitly — no whitewashing the handoff quality</li>
+            <li><span class="dot"></span>Delivered as an HTML interactive diagram — shareable without tooling</li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" style="border-color:rgba(245,158,11,0.3)">
+            <div class="card-title" style="color:#fbbf24">Why Week 2?</div>
+            <p>Delivering R4 early gives IT and new engineers the map they need to understand every change we make from Week 3 onward. It de-risks the rest of the engagement.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Format</div>
+            <p>HTML with embedded SVG diagram. No Visio, no Confluence dependency. Version-controlled alongside the code. Always up-to-date.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">8</div>
+  </div>
+
+  <!-- ── SLIDE 9: Architecture Diagram ── -->
+  <div class="slide" id="slide-9">
+    <div class="slide-inner" style="padding-bottom:28px">
+      <div class="eyebrow">Architecture · R4 Deliverable</div>
+      <h2 style="margin-bottom:14px">Current-state system — four layers</h2>
+      <div style="flex:1;display:flex;align-items:stretch;gap:0;min-height:0;overflow:hidden">
+
+        <!-- Layer 1: Browser -->
+        <div style="flex:1;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:14px 12px;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#3b82f6;margin-bottom:8px">Browser</div>
+          <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Vue 3 SPA · :3000</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">Dashboard.vue</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">Inventory.vue</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">Orders.vue</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">Reports.vue</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#60a5fa;font-family:monospace">Restocking.vue ✦</div>
+            <div style="margin-top:5px;font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.06em">Shared</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#64748b;font-family:monospace">FilterBar.vue</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#64748b;font-family:monospace">useFilters.js</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#64748b;font-family:monospace">currency.js</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 8px;color:#475569;font-size:18px;flex-shrink:0">&#8594;</div>
+
+        <!-- Layer 2: API Client -->
+        <div style="flex:0.65;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:14px 12px;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#818cf8;margin-bottom:8px">API Client</div>
+          <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">src/api.js</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">Axios instance</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">base :8001/api</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">URLSearchParams</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">14 endpoints</div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:#475569;line-height:1.7">Filter params:<br/>warehouse · category<br/>status · month</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 8px;color:#475569;font-size:18px;flex-shrink:0">&#8594;</div>
+
+        <!-- Layer 3: FastAPI -->
+        <div style="flex:1;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:14px 12px;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#22c55e;margin-bottom:8px">FastAPI</div>
+          <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">server/main.py · :8001</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">/inventory</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">/orders</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">/demand</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">/reports/*</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">/spending/*</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#60a5fa;font-family:monospace">/restocking ✦</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 8px;color:#475569;font-size:18px;flex-shrink:0">&#8594;</div>
+
+        <!-- Layer 4: Data -->
+        <div style="flex:1;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:14px 12px;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#f59e0b;margin-bottom:8px">Data Layer</div>
+          <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">server/data/ (JSON)</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">inventory.json</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">orders.json (3.5k)</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">demand_forecasts</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">spending.json</div>
+            <div style="background:#1e293b;border-radius:4px;padding:3px 8px;font-size:11px;color:#94a3b8;font-family:monospace">purchase_orders</div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:#475569;line-height:1.7">No DB · JSON loaded<br/>into memory at startup</div>
+        </div>
+
+      </div>
+      <div style="margin-top:10px;display:flex;gap:12px;align-items:center">
+        <span style="padding:4px 10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:4px;font-size:11px;color:#60a5fa;font-weight:600">:3000 Vue SPA</span>
+        <span style="padding:4px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:4px;font-size:11px;color:#4ade80;font-weight:600">:8001 FastAPI / Uvicorn</span>
+        <span style="padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid #334155;border-radius:4px;font-size:11px;color:#64748b">Pydantic v2 &middot; CORS open all origins</span>
+        <span style="margin-left:auto;padding:4px 10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:4px;font-size:11px;color:#60a5fa">✦ New in this engagement</span>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">9</div>
+  </div>
+
+  <!-- ── SLIDE 10: Timeline ── -->
+  <div class="slide" id="slide-10">
+    <div class="slide-inner" style="padding-bottom:32px">
+      <div class="eyebrow">Delivery Plan</div>
+      <h2>10 weeks · 3 phases · fixed gates</h2>
+      <div class="timeline">
+        <div class="phase">
+          <div class="phase-label">
+            <div class="phase-name">Phase 1</div>
+            <div class="phase-weeks">Weeks 1–2</div>
+          </div>
+          <div class="phase-bar phase-bar-1">
+            <span class="phase-item">R4 Architecture Docs</span>
+            <span class="phase-item">R1 Audit</span>
+            <span class="phase-item">Codebase orientation</span>
+            <span class="phase-item">Kickoff &amp; access</span>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-label">
+            <div class="phase-name">Phase 2</div>
+            <div class="phase-weeks">Weeks 3–6</div>
+          </div>
+          <div class="phase-bar phase-bar-2">
+            <span class="phase-item">R1 Fixes (≥8 issues)</span>
+            <span class="phase-item">R2 Restocking View</span>
+            <span class="phase-item">R3 Test foundation</span>
+            <span class="phase-item">Phase gate review</span>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-label">
+            <div class="phase-name">Phase 3</div>
+            <div class="phase-weeks">Weeks 7–9</div>
+          </div>
+          <div class="phase-bar phase-bar-3">
+            <span class="phase-item">R3 Full test suite</span>
+            <span class="phase-item">D1 UI modernization</span>
+            <span class="phase-item">D2 i18n (Tokyo)</span>
+            <span class="phase-item">D3 Dark mode</span>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-label">
+            <div class="phase-name">Buffer</div>
+            <div class="phase-weeks">Week 10</div>
+          </div>
+          <div class="phase-bar" style="background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.25)">
+            <span class="phase-item" style="color:#94a3b8">Review &amp; sign-off</span>
+            <span class="phase-item" style="color:#94a3b8">Contingency</span>
+            <span class="phase-item" style="color:#94a3b8">Final handoff</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:24px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b">
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(59,130,246,0.4)"></div>
+          Required scope (R1–R4)
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#64748b">
+          <div style="width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,0.35)"></div>
+          Optional extension (D1–D3)
+        </div>
+        <div style="margin-left:auto;font-size:12px;color:#64748b">All phase gates include written sign-off from J. Okafor or delegate</div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">10</div>
+  </div>
+
+  <!-- ── SLIDE 10: Pricing ── -->
+  <div class="slide" id="slide-11">
+    <div class="slide-inner" style="padding-bottom:20px;padding-top:28px">
+      <div class="eyebrow">Commercial Terms</div>
+      <h2 style="margin-bottom:10px">Fixed-fee · not-to-exceed · no surprises</h2>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th style="width:48%">Deliverable</th>
+            <th style="width:14%;text-align:right">Days</th>
+            <th style="width:18%;text-align:right">Fee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>R4 Architecture documentation</td>
+            <td class="days">2</td>
+            <td class="price">€2,500</td>
+          </tr>
+          <tr>
+            <td>R1 Reports remediation</td>
+            <td class="days">8</td>
+            <td class="price">€10,000</td>
+          </tr>
+          <tr>
+            <td>R3 Automated browser testing</td>
+            <td class="days">5</td>
+            <td class="price">€6,250</td>
+          </tr>
+          <tr>
+            <td>R2 Restocking recommendations</td>
+            <td class="days">10</td>
+            <td class="price">€12,500</td>
+          </tr>
+          <tr>
+            <td>Project management &amp; delivery</td>
+            <td class="days">5</td>
+            <td class="price">€6,250</td>
+          </tr>
+          <tr class="subtotal">
+            <td><strong>Required total (R1–R4)</strong></td>
+            <td class="days"><strong>30</strong></td>
+            <td class="price"><strong>€37,500</strong></td>
+          </tr>
+          <tr class="optional-header">
+            <td colspan="3">Optional extension (D1–D3)</td>
+          </tr>
+          <tr>
+            <td>D1 UI modernization</td>
+            <td class="days">5</td>
+            <td class="price">€6,250</td>
+          </tr>
+          <tr>
+            <td>D2 Internationalization</td>
+            <td class="days">4</td>
+            <td class="price">€5,000</td>
+          </tr>
+          <tr>
+            <td>D3 Dark mode</td>
+            <td class="days">3</td>
+            <td class="price">€3,750</td>
+          </tr>
+          <tr class="grand-total">
+            <td><strong>Full scope NTE</strong></td>
+            <td class="days"><strong>42</strong></td>
+            <td class="price"><strong>€52,500</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;display:flex;gap:16px">
+        <div class="card" style="flex:1;padding:8px 12px">
+          <div class="card-title">Payment milestones</div>
+          <p style="font-size:12px">30% on contract signing · 40% at Phase 2 gate · 30% on final delivery and sign-off</p>
+        </div>
+        <div class="card" style="flex:1;padding:8px 12px;border-color:rgba(59,130,246,0.3)">
+          <div class="card-title" style="color:#60a5fa">Fixed-fee rationale</div>
+          <p style="font-size:12px">Okafor values predictability. Our fixed fee means Meridian cannot overspend regardless of what we find in the codebase. No change-order creep on required scope.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">11</div>
+  </div>
+
+  <!-- ── SLIDE 11: Relevant Experience ── -->
+  <div class="slide" id="slide-12">
+    <div class="slide-inner" style="padding-bottom:20px">
+      <div class="eyebrow">Firm Credentials</div>
+      <h2>Relevant Experience</h2>
+      <div class="three-col" style="flex:1;align-items:stretch">
+        <div class="card" style="display:flex;flex-direction:column;gap:8px;border-top:3px solid #3b82f6;padding:14px 16px">
+          <div class="card-title">Project Fluent</div>
+          <div style="font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.3">Mid-market industrial distributor, Germany</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0">
+            <span class="tag tag-blue">Vue 3</span>
+            <span class="tag tag-blue">FastAPI</span>
+            <span class="tag tag-blue">Playwright</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">10 weeks · 3 engineers</div>
+          <ul class="card ul" style="margin-top:4px">
+            <li>Inherited dashboard · defect remediation + test coverage</li>
+            <li>11 defects resolved across filter, i18n, and formatting</li>
+            <li>Playwright suite · 8 critical flows · 94% coverage at delivery</li>
+            <li>Architecture docs handed to IT team</li>
+          </ul>
+          <div style="margin-top:auto;padding-top:10px;border-top:1px solid #2d3f55;font-size:12px;color:#4ade80;font-weight:600">IT team approved 2 follow-on change requests within Q1 post-handoff. Zero regressions in 6 months.</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:8px;border-top:3px solid #6366f1;padding:14px 16px">
+          <div class="card-title">Project Apex</div>
+          <div style="font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.3">EMEA wholesale distributor, Netherlands</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0">
+            <span class="tag tag-blue">Vue 3</span>
+            <span class="tag tag-blue">FastAPI</span>
+            <span class="tag tag-blue">PostgreSQL</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">14 weeks · 4 engineers</div>
+          <ul class="card ul" style="margin-top:4px">
+            <li>Net-new restocking recommendations view on live app</li>
+            <li>Budget-ceiling purchase order engine (FastAPI)</li>
+            <li>ERP export workflow (SAP B1 REST integration)</li>
+            <li>Playwright regression suite for new + existing views</li>
+          </ul>
+          <div style="margin-top:auto;padding-top:10px;border-top:1px solid #2d3f55;font-size:12px;color:#4ade80;font-weight:600">30% reduction in manual reorder prep time. Delivered on schedule within fixed-fee envelope.</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:8px;border-top:3px solid #22c55e;padding:14px 16px">
+          <div class="card-title">Project Kanji</div>
+          <div style="font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.3">Precision parts manufacturer, Germany &amp; Tokyo</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0">
+            <span class="tag tag-blue">Vue 3</span>
+            <span class="tag tag-blue">vue-i18n v9</span>
+            <span class="tag tag-blue">Playwright</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">16 weeks · 4 engineers</div>
+          <ul class="card ul" style="margin-top:4px">
+            <li>UI modernization + Japanese locale rollout (all modules)</li>
+            <li>Dark-mode theme for 12 warehouse floor stations</li>
+            <li>87 Playwright tests across DE/EN/JP locale variants</li>
+            <li>WCAG 2.1 AA compliance confirmed on primary views</li>
+          </ul>
+          <div style="margin-top:auto;padding-top:10px;border-top:1px solid #2d3f55;font-size:12px;color:#4ade80;font-weight:600">Tokyo team fully adopted Japanese-locale views within first week. No post-delivery defects in Q1.</div>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <p style="font-size:12px;color:#475569">Client names anonymized per standard reference policy. Detailed case studies and referee contacts available on request.</p>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">12</div>
+  </div>
+
+  <!-- ── SLIDE 12: Our Proposed Team ── -->
+  <div class="slide" id="slide-13">
+    <div class="slide-inner" style="padding-bottom:32px">
+      <div class="eyebrow">Our Proposed Team</div>
+      <h2 style="margin-bottom:16px">Four people. One engagement. No hand-offs.</h2>
+      <div class="team-grid">
+        <!-- Lars Meijering -->
+        <div class="team-card">
+          <div class="team-name">Lars Meijering</div>
+          <div class="team-role">Engagement Lead</div>
+          <div class="team-skills">
+            <span class="team-skill">12 yrs consulting</span>
+            <span class="team-skill">PMP certified</span>
+            <span class="team-skill">Delivery governance</span>
+          </div>
+          <div class="team-bio">Led 3 comparable dashboard modernization engagements. Primary point of contact for J. Okafor and R. Tanaka throughout the engagement.</div>
+        </div>
+        <!-- Sophie Berger -->
+        <div class="team-card">
+          <div class="team-name">Sophie Berger</div>
+          <div class="team-role">Senior Frontend Engineer</div>
+          <div class="team-skills">
+            <span class="team-skill">Vue 3 specialist</span>
+            <span class="team-skill">7 yrs experience</span>
+            <span class="team-skill">vue-i18n contributor</span>
+          </div>
+          <div class="team-bio">Open-source contributor to vue-i18n. Built 2 operator-facing inventory UIs in comparable stack. Will lead R1, R2, and D1–D3.</div>
+        </div>
+        <!-- Daniel Kovač -->
+        <div class="team-card">
+          <div class="team-name">Daniel Kovač</div>
+          <div class="team-role">Backend &amp; API Engineer</div>
+          <div class="team-skills">
+            <span class="team-skill">Python / FastAPI</span>
+            <span class="team-skill">6 yrs experience</span>
+            <span class="team-skill">API design</span>
+          </div>
+          <div class="team-bio">Delivered the restocking algorithm for a wholesale distributor in Project Apex. Owns data pipeline reliability and the R2 backend endpoint.</div>
+        </div>
+        <!-- Yuki Tanabe -->
+        <div class="team-card">
+          <div class="team-name">Yuki Tanabe</div>
+          <div class="team-role">QA &amp; Test Automation</div>
+          <div class="team-skills">
+            <span class="team-skill">Playwright</span>
+            <span class="team-skill">Cypress</span>
+            <span class="team-skill">CI/CD pipelines</span>
+            <span class="team-skill">Native Japanese</span>
+          </div>
+          <div class="team-bio">Delivered 94% E2E coverage on Project Fluent. Native Japanese speaker — directly validates Tokyo i18n and locale rendering.</div>
+        </div>
+      </div>
+      <div class="team-footer" style="margin-top:12px">
+        <p>Full CVs available on request. Team allocation: 100% dedicated for Phases 1–2, 50% in Phase 3.</p>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">13</div>
+  </div>
+
+  <!-- ── SLIDE 13: Why adesso ── -->
+  <div class="slide" id="slide-14">
+    <div class="slide-inner">
+      <div class="eyebrow">Firm Credentials</div>
+      <h2>Why adesso</h2>
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column">
+          <div class="proof-point">
+            <div class="proof-icon">&#x26A1;</div>
+            <div class="proof-text">
+              <strong>Vue 3 + FastAPI depth</strong>
+              <p>We work in this exact stack daily. Composition API, Vite, Python async patterns — no learning curve on the fundamentals.</p>
+            </div>
+          </div>
+          <div class="proof-point">
+            <div class="proof-icon">&#x2705;</div>
+            <div class="proof-text">
+              <strong>Audit-and-fix methodology</strong>
+              <p>We document before we touch. Meridian gets a full defect log before any code changes — not a bill for hours of undocumented work.</p>
+            </div>
+          </div>
+          <div class="proof-point">
+            <div class="proof-icon">&#x1F9EA;</div>
+            <div class="proof-text">
+              <strong>Test-first culture</strong>
+              <p>Playwright is standard practice for us. IT's gating requirement is something we'd have recommended anyway.</p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <div class="proof-point">
+            <div class="proof-icon">&#x1F5FA;</div>
+            <div class="proof-text">
+              <strong>Structured delivery, not heroics</strong>
+              <p>Phase gates, written sign-offs, and a fixed fee. Okafor gets predictability; Tanaka gets her feature; IT gets their tests.</p>
+            </div>
+          </div>
+          <div class="proof-point">
+            <div class="proof-icon">&#x1F310;</div>
+            <div class="proof-text">
+              <strong>Multi-region awareness</strong>
+              <p>We understand the Tokyo warehouse context. i18n and timezone handling are first-class concerns, not afterthoughts.</p>
+            </div>
+          </div>
+          <div class="proof-point">
+            <div class="proof-icon">&#x1F4C4;</div>
+            <div class="proof-text">
+              <strong>Evaluation criteria alignment</strong>
+              <p>40% technical approach · 25% experience · 20% timeline · 15% price. This proposal is structured to score well on what Meridian weighted highest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">14</div>
+  </div>
+
+  <!-- ── SLIDE 14: Next Steps ── -->
+  <div class="slide" id="slide-15">
+    <div class="slide-inner">
+      <div class="eyebrow">Next Steps</div>
+      <h2>How we move from proposal to engagement</h2>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Clarification call with procurement (J. Okafor)</strong>
+            <p>Per RFP §6 — we've submitted 5 written questions. A 30-minute call to confirm budget range, "critical flows" definition, and Tokyo i18n scope.</p>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>Capabilities presentation (if shortlisted)</strong>
+            <p>We're ready to present within 5 business days of shortlist notification. This deck is our starting point.</p>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>Contract and access provisioning</strong>
+            <p>On award: SOW sign-off, repo access, and a kickoff meeting with Tanaka and IT within one week of contract execution.</p>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>Week 2 architecture doc delivery</strong>
+            <p>First tangible deliverable — gives Meridian something in hand early and signals how we work.</p>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px 16px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:6px">
+        <p style="font-size:13px;color:#94a3b8">Questions or to schedule the clarification call: <strong style="color:#60a5fa">marcel.cossijns@adesso.de</strong> · Reference RFP MC-2026-0417</p>
+      </div>
+    </div>
+    <div class="slide-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="54" height="16" viewBox="0 0 54 16" role="img" aria-label="adesso">
+        <text x="0" y="13" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#e3000f" letter-spacing="-0.3">adesso</text>
+      </svg>
+    </div>
+    <div class="slide-num">15</div>
+  </div>
+
+  <!-- ── Navigation ── -->
+  <div class="nav">
+    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>← Previous</button>
+    <div class="nav-dots" id="nav-dots"></div>
+    <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+  const TOTAL = 15;
+  let current = 1;
+
+  const dotsContainer = document.getElementById('nav-dots');
+  for (let i = 1; i <= TOTAL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 1 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function goTo(n) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    dotsContainer.children[current - 1].classList.remove('active');
+    current = Math.max(1, Math.min(TOTAL, n));
+    document.getElementById('slide-' + current).classList.add('active');
+    dotsContainer.children[current - 1].classList.add('active');
+    document.getElementById('counter').textContent = current + ' / ' + TOTAL;
+    document.getElementById('prev-btn').disabled = current === 1;
+    document.getElementById('next-btn').disabled = current === TOTAL;
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+  });
+</script>
+</body>
+</html>
